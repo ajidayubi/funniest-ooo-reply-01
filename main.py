@@ -22,6 +22,7 @@ The program is deterministic: it writes the same bytes on every run, uses
 only the standard library, and needs no network.
 """
 
+import argparse
 import os
 
 REPLY = "I'm away until Monday. My replacement model answered your email already. It said no."
@@ -29,7 +30,7 @@ REPLY = "I'm away until Monday. My replacement model answered your email already
 OUTPUT_PATH = "/output/entry.txt"
 
 
-def main() -> None:
+def write_reply(path: str) -> str:
     text = REPLY
     if not (1 <= len(text) <= 160):
         raise SystemExit("reply must be 1-160 characters, got %d" % len(text))
@@ -37,9 +38,19 @@ def main() -> None:
         raise SystemExit("reply must not be only whitespace")
     if "\n" in text:
         raise SystemExit("reply must be one line")
-    os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
-    with open(OUTPUT_PATH, "w", encoding="utf-8", newline="") as f:
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="") as f:
         f.write(text)
+    return text
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Write the out-of-office reply to a file.")
+    parser.add_argument("--out", default=OUTPUT_PATH,
+                        help="where to write entry.txt (default: %(default)s)")
+    args = parser.parse_args()
+    write_reply(args.out)
 
 
 if __name__ == "__main__":
